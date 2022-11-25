@@ -1,3 +1,5 @@
+import numpy as np
+
 from event import Event, EventType
 
 class Queue:
@@ -12,8 +14,8 @@ class Queue:
   Calculate the time for the next departure time
   """
   def __scheduleTime(self, currTime):
-    # TODO: make this probabilistic
-    return currTime + 1.2
+    # service time is an exponential distibution
+    return currTime + np.random.exponential(self.mu)
 
   """
   The arrival routine. Returns (optional) scheduled depart event

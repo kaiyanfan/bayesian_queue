@@ -1,17 +1,18 @@
 import heapq
 import json
+import numpy as np
 
 from agent import Agent
 from event import Event, EventType
 from queue import Queue
 
 class Simulation:
-  def __init__(self, arrivalMu, numQueue, departMu, simTime):
+  def __init__(self, arrivalLam, numQueue, departMu, simTime):
     # list of all queues
     self.__initQueue(numQueue, departMu)
     # all scheduled events; priority queue
     self.events = []
-    self.mu = arrivalMu
+    self.arrivalLam = arrivalLam
     self.time = 0
     self.runtime = simTime
 
@@ -24,8 +25,9 @@ class Simulation:
   Calculate the time for the next arrival event
   """
   def __scheduleTime(self):
-    # TODO: make this probablistic
-    return 1
+    # arrival is a poisson process
+    time = np.random.poisson(self.arrivalLam)
+    return time
   
   """
   Schedule the next arrival event
@@ -85,7 +87,7 @@ def simulate():
   f = open("../qconfig.json")
   configs = json.load(f)
   try:
-    arrivalMu = configs["arrival_mu"]
+    arrivalLam = configs["arrival_lam"]
     numQueue = configs["num_queue"]
     departMu = configs["depart_mu"]
     simTime = configs["sim_time"]
@@ -93,7 +95,7 @@ def simulate():
     print("Config Error")
     return
 
-  sim = Simulation(arrivalMu, numQueue, departMu, simTime)
+  sim = Simulation(arrivalLam, numQueue, departMu, simTime)
   sim.run()
 
 if __name__ == "__main__":
