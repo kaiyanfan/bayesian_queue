@@ -1,10 +1,10 @@
 from event import Event, EventType
 
 class Queue:
-  def __init__(self, queueId):
+  def __init__(self, queueId, departMu):
     self.id = queueId
     self.queue = []
-    self.mu = 1
+    self.mu = departMu
     self.numArrival = 0
     self.numDepart = 0
   

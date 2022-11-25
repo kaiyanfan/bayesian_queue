@@ -1,0 +1,8 @@
+{
+  "arrival_mu":1,
+  "num_queue":1,
+  "depart_mu":[
+     1.2
+  ],
+  "sim_time":10
+}

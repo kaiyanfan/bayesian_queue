@@ -1,22 +1,24 @@
 import heapq
+import json
 
 from agent import Agent
 from event import Event, EventType
 from queue import Queue
 
 class Simulation:
-  def __init__(self, runtime):
+  def __init__(self, arrivalMu, numQueue, departMu, simTime):
     # list of all queues
-    self.queues = self.__initQueue()
+    self.__initQueue(numQueue, departMu)
     # all scheduled events; priority queue
     self.events = []
-    self.mu = 1
+    self.mu = arrivalMu
     self.time = 0
-    self.runtime = runtime
+    self.runtime = simTime
 
-  def __initQueue(self):
-    # TODO: multiple queues
-    return [Queue(0)]
+  def __initQueue(self, numQueue, departMu):
+    self.queues = []
+    for i in range(numQueue):
+      self.queues.append(Queue(i, departMu[i]))
 
   """
   Calculate the time for the next arrival event
@@ -79,6 +81,20 @@ class Simulation:
       else:
         self.__depart(event)
 
-if __name__ == "__main__":
-  sim = Simulation(10)
+def simulate():
+  f = open("../qconfig.json")
+  configs = json.load(f)
+  try:
+    arrivalMu = configs["arrival_mu"]
+    numQueue = configs["num_queue"]
+    departMu = configs["depart_mu"]
+    simTime = configs["sim_time"]
+  except:
+    print("Config Error")
+    return
+
+  sim = Simulation(arrivalMu, numQueue, departMu, simTime)
   sim.run()
+
+if __name__ == "__main__":
+  simulate()
