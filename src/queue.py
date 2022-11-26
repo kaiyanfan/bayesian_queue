@@ -18,6 +18,12 @@ class Queue:
     return currTime + np.random.exponential(self.mu)
 
   """
+  Queue length
+  """
+  def size(self):
+    return len(self.queue)
+
+  """
   The arrival routine. Returns (optional) scheduled depart event
   """
   def arrive(self, agent, currTime):

@@ -1,8 +1,10 @@
 {
-  "arrival_lam":10,
-  "num_queue":1,
+  "arrival_lam":15,
+  "num_queue":3,
   "depart_mu":[
-     8
+     30,
+     15,
+     5
   ],
-  "sim_time":100
+  "sim_time":150
 }

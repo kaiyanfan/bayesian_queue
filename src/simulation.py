@@ -43,11 +43,15 @@ class Simulation:
   """
   def __arrive(self, event):
     agent = Agent()
-    # TODO: join the right queue
-    queue = 0
-    print(f"Agent {agent.id} arrives queue {queue} at {self.time}")
+    shortest, shortestLen = 0, self.queues[0].size()
+    # join the shortest queue
+    for i, q in enumerate(self.queues):
+      if q.size() < shortestLen:
+        shortest, shortestLen = i, q.size()
+  
+    print(f"Agent {agent.id} arrives queue {shortest} at {self.time}")
 
-    nextEvent = self.queues[queue].arrive(agent, self.time)
+    nextEvent = self.queues[shortest].arrive(agent, self.time)
     if nextEvent != None:
       heapq.heappush(self.events, nextEvent)
 
