@@ -2,26 +2,30 @@ import heapq
 import json
 import numpy as np
 
-from agent import Agent
+from agents.mallcustomer import MallCustomer
+
 from event import Event, EventType
 from bayesqueue import Queue
 from logger import Logger
 
+config = "../configs/mall01.json"
+
 class Simulation:
-  def __init__(self, arrivalLam, numQueue, departMu, simTime):
-    # list of all queues
-    self.__initQueue(numQueue, departMu)
+  def __init__(self, agentType, arrivalLam, numQueue, queueParams, simTime):
+    self.agentType = agentType
     # all scheduled events; priority queue
     self.events = []
     self.arrivalLam = arrivalLam
     self.time = 0
     self.runtime = simTime
     self.logger = Logger(numQueue)
+    # list of all queues
+    self.__initQueue(numQueue, queueParams)
 
-  def __initQueue(self, numQueue, departMu):
+  def __initQueue(self, numQueue, queueParams):
     self.queues = []
     for i in range(numQueue):
-      self.queues.append(Queue(i, departMu[i]))
+      self.queues.append(Queue(i, queueParams[i], self.logger))
 
   """
   Calculate the time for the next arrival event
@@ -44,12 +48,10 @@ class Simulation:
   On arrival event
   """
   def __arrive(self, event):
-    agent = Agent()
-
+    agent = self.agentType(self.time)
     queue_idx = agent.select_queue(self.queues)
-
-    print(f"Agent {agent.id} arrives queue {queue_idx} at {self.time} with load time {agent.load_time}")
-    self.logger.onArrival(self.time, queue_idx)
+    agent.initQueue = queue_idx
+    self.logger.onArrival(self.time, queue_idx, agent)
 
     nextEvent = self.queues[queue_idx].arrive(agent, self.time)
     if nextEvent != None:
@@ -61,7 +63,6 @@ class Simulation:
   def __depart(self, event):
     queue = event.queue
     nextEvent = self.queues[queue].depart(self.time)
-    self.logger.onDepart(self.time, queue)
     if nextEvent != None:
       heapq.heappush(self.events, nextEvent)
 
@@ -80,29 +81,35 @@ class Simulation:
         break
       # pick up the next event
       event = heapq.heappop(self.events)
-      # time travel
+      # trigger the event
       self.time = event.eventTime
       if event.eventType == EventType.ARRIVAL:
         self.__arrive(event)
         self.__schedule()
       else:
         self.__depart(event)
+      # update agents' understanding of the queue
     
     self.logger.report()
 
 def simulate():
-  f = open("../qconfig.json")
+  f = open(config)
   configs = json.load(f)
   try:
-    arrivalLam = configs["arrival_lam"]
-    numQueue = configs["num_queue"]
-    departMu = configs["depart_mu"]
     simTime = configs["sim_time"]
+    simType = configs["type"]
+    numQueue = configs["num_queue"]
+    arrivalLam = configs["arrival_lam"]
+    params = configs["queue_params"]
   except:
     print("Config Error")
     return
 
-  sim = Simulation(arrivalLam, numQueue, departMu, simTime)
+  if simType == "mallcustomer":
+    agentType = MallCustomer
+  else:
+    raise Exception(f"Unknown simulation type {simType}")
+  sim = Simulation(agentType, arrivalLam, numQueue, params, simTime)
   sim.run()
 
 if __name__ == "__main__":
