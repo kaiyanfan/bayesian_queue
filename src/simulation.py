@@ -4,7 +4,7 @@ import numpy as np
 
 from agent import Agent
 from event import Event, EventType
-from queue import Queue
+from bayesqueue import Queue
 
 class Simulation:
   def __init__(self, arrivalLam, numQueue, departMu, simTime):
