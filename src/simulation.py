@@ -5,6 +5,7 @@ import numpy as np
 from agent import Agent
 from event import Event, EventType
 from bayesqueue import Queue
+from logger import Logger
 
 class Simulation:
   def __init__(self, arrivalLam, numQueue, departMu, simTime):
@@ -15,6 +16,7 @@ class Simulation:
     self.arrivalLam = arrivalLam
     self.time = 0
     self.runtime = simTime
+    self.logger = Logger(numQueue)
 
   def __initQueue(self, numQueue, departMu):
     self.queues = []
@@ -47,6 +49,7 @@ class Simulation:
     queue_idx = agent.select_queue(self.queues)
 
     print(f"Agent {agent.id} arrives queue {queue_idx} at {self.time} with load time {agent.load_time}")
+    self.logger.onArrival(self.time, queue_idx)
 
     nextEvent = self.queues[queue_idx].arrive(agent, self.time)
     if nextEvent != None:
@@ -58,6 +61,7 @@ class Simulation:
   def __depart(self, event):
     queue = event.queue
     nextEvent = self.queues[queue].depart(self.time)
+    self.logger.onDepart(self.time, queue)
     if nextEvent != None:
       heapq.heappush(self.events, nextEvent)
 
@@ -83,6 +87,8 @@ class Simulation:
         self.__schedule()
       else:
         self.__depart(event)
+    
+    self.logger.report()
 
 def simulate():
   f = open("../qconfig.json")
