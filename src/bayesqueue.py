@@ -17,6 +17,13 @@ class Queue:
     return len(self.queue)
 
   """
+  Update all agents' observations
+  """
+  def updateAll(self, event):
+    for agent in self.queue:
+      agent.update(event)
+
+  """
   The arrival routine. Returns (optional) scheduled depart event
   """
   def arrive(self, agent, currTime):
@@ -24,8 +31,9 @@ class Queue:
     self.load += agent.load
     # schedule the departure event if the queue was empty
     if len(self.queue) == 1:
-      departTime = currTime + self.queue[0].serve(self.params)
-      event = Event(self.id, EventType.DEPART, departTime)
+      serveTime = self.queue[0].serve(self.params)
+      departTime = currTime + serveTime
+      event = Event(self.id, EventType.DEPART, departTime, serveTime, self.queue[0].load)
       return event
     return None
 
@@ -38,7 +46,8 @@ class Queue:
     self.queue = self.queue[1:]
     # schedule the departure event if the queue isn't empty
     if len(self.queue) > 0:
-      departTime = currTime + self.queue[0].serve(self.params)
-      event = Event(self.id, EventType.DEPART, departTime)
+      serveTime = self.queue[0].serve(self.params)
+      departTime = currTime + serveTime
+      event = Event(self.id, EventType.DEPART, departTime, serveTime, self.queue[0].load)
       return event
     return None

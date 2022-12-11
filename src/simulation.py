@@ -23,6 +23,7 @@ class Simulation:
     self.__initQueue(numQueue, queueParams)
 
   def __initQueue(self, numQueue, queueParams):
+    self.numQueue = numQueue
     self.queues = []
     for i in range(numQueue):
       self.queues.append(Queue(i, queueParams[i], self.logger))
@@ -48,9 +49,10 @@ class Simulation:
   On arrival event
   """
   def __arrive(self, event):
-    agent = self.agentType(self.time)
+    agent = self.agentType(self.time, self.numQueue)
     queue_idx = agent.select_queue(self.queues)
     agent.initQueue = queue_idx
+    agent.currQeueu = queue_idx
     self.logger.onArrival(self.time, queue_idx, agent)
 
     nextEvent = self.queues[queue_idx].arrive(agent, self.time)
@@ -63,6 +65,9 @@ class Simulation:
   def __depart(self, event):
     queue = event.queue
     nextEvent = self.queues[queue].depart(self.time)
+    # update all agents' observations
+    for q in self.queues:
+      q.updateAll(event)
     if nextEvent != None:
       heapq.heappush(self.events, nextEvent)
 
