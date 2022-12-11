@@ -102,13 +102,13 @@ def simulate():
     arrivalLam = configs["arrival_lam"]
     params = configs["queue_params"]
   except:
-    print("Config Error")
-    return
+    raise Exception("Config Error")
 
   if simType == "mallcustomer":
     agentType = MallCustomer
   else:
     raise Exception(f"Unknown simulation type {simType}")
+
   sim = Simulation(agentType, arrivalLam, numQueue, params, simTime)
   sim.run()
 
