@@ -70,6 +70,36 @@ class Simulation:
       q.updateAll(event)
     if nextEvent != None:
       heapq.heappush(self.events, nextEvent)
+  
+  """
+  On switch event
+  """
+  def __switch(self, event):
+    queue = event.queue
+    agent = event.agent
+    # check if agent has already been served, no need to switch if so
+    if agent.been_served:
+      return
+    self.queues[queue].remove_agent(agent)
+
+    queue_idx = agent.select_queue(self.queues)
+    agent.currQeueu = queue_idx
+    self.logger.onSwitch(self.time, agent, queue, queue_idx)
+
+    nextEvent = self.queues[queue_idx].arrive(agent, self.time)
+    if nextEvent != None:
+      heapq.heappush(self.events, nextEvent)
+  
+  """
+  On leave event
+  """
+  def __leave(self, event):
+    queue = event.queue
+    # check if agent has already been served, no need to leave if so
+    if event.agent.been_served:
+      return
+    self.queues[queue].remove_agent(event.agent)
+    self.logger.onLeave(self.time, event.agent, queue)
 
   def run(self):
     print("Simulation begins")
@@ -91,8 +121,12 @@ class Simulation:
       if event.eventType == EventType.ARRIVAL:
         self.__arrive(event)
         self.__schedule()
-      else:
+      elif event.eventType == EventType.DEPART:
         self.__depart(event)
+      elif event.eventType == EventType.SWITCH:
+        self.__switch(event)
+      elif event.eventType == EventType.LEAVE:
+        self.__leave(event)
       # update agents' understanding of the queue
     
     self.logger.report()

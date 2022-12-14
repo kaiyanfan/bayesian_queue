@@ -47,11 +47,34 @@ class Logger:
     self.totalWaitTime[initQueue] = (count + 1, totalTime + time - agent.arrivalTime)
     self.waitTime[initQueue][time] = self.totalWaitTime[initQueue][1] / self.totalWaitTime[initQueue][0]
 
-  def onSwitch(self, time, fromQueue, toQueue):
-    pass
+  def onSwitch(self, time, agent, fromQueue, toQueue):
+    print(f"Agent {agent.id} switches from queue {fromQueue} to queue {toQueue} at {time}")
+    self.queueStat[fromQueue][Row.LEAVE.value] += 1
+    self.currLen[fromQueue] -= 1
+    self.queueLen[fromQueue][time] = self.currLen[fromQueue]
 
-  def onLeave(self, time, queue):
-    pass
+    self.queueStat[toQueue][Row.JOIN.value] += 1
+    self.currLen[toQueue] += 1
+    self.queueLen[toQueue][time] = self.currLen[toQueue]
+
+    initQueue = agent.initQueue
+    currQeueu = agent.currQeueu
+    count, totalTime = self.totalWaitTime[initQueue]
+    self.totalWaitTime[initQueue] = (count + 1, totalTime + time - agent.arrivalTime)
+    self.waitTime[initQueue][time] = self.totalWaitTime[initQueue][1] / self.totalWaitTime[initQueue][0]
+
+  def onLeave(self, time, agent, queue):
+    print(f"Agent {agent.id} quits queue {queue} at {time}")
+    self.queueStat[queue][Row.LEAVE.value] += 1
+    self.currLen[queue] -= 1
+    self.queueLen[queue][time] = self.currLen[queue]
+
+    # updates average wait time statistics
+    initQueue = agent.initQueue
+    currQeueu = agent.currQeueu
+    count, totalTime = self.totalWaitTime[currQeueu]
+    self.totalWaitTime[currQeueu] = (count + 1, totalTime + time - agent.arrivalTime)
+    self.waitTime[currQeueu][time] = self.totalWaitTime[currQeueu][1] / self.totalWaitTime[currQeueu][0]
 
   def report(self):
     # Report to csv

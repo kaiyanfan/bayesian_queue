@@ -20,6 +20,9 @@ class Agent:
     
     self.arrivalTime = arrivalTime
     self.select_how = select_how
+    self.quit_time = 100
+    self.trials = 2
+    self.been_served = False
 
   def __select_shortest(self, queues):
     shortest, shortestLen = 0, queues[0].size()
