@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-from agents.agent import Agent
+from agents.agent import Agent, SelectionCriteria
 
 MIN_LOAD = 10
 MAX_LOAD = 30
@@ -48,8 +48,12 @@ class MallCustomer(Agent):
   """
   Select the fastest queue based on the posterior estimates on queue speed
   """
-  def __select_fastest(self, queues):
-    pass
+  def __select_infer(self, queues):
+    least, least_load = 0, queues[0].load * self.speeds[0]
+    for i, q in enumerate(queues):
+      if q.load * self.speeds[i] < least_load:
+        least, least_load = i, q.load * self.speeds[i]
+    return least
   
   """
   Update the agent's view of the queue states
@@ -73,3 +77,12 @@ class MallCustomer(Agent):
     sigma = params[1]
     # at least takes 1 time unit to serve
     return max(1, np.random.normal(mu, sigma) * self.load)
+
+  def select_queue(self, queues):
+    if self.select_how == SelectionCriteria.SHORTEST:
+      return super().select_shortest(queues)
+    elif self.select_how == SelectionCriteria.LEAST_LOAD:
+      return super().select_least_load(queues)
+    elif self.select_how == SelectionCriteria.INFER:
+      return self.__select_infer(queues)
+    raise Exception("Invalid selection Criteria")

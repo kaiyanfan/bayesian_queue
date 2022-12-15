@@ -3,6 +3,7 @@ import json
 import numpy as np
 
 from agents.mallcustomer import MallCustomer
+from agents.agent import SelectionCriteria
 
 from event import Event, EventType
 from bayesqueue import Queue
@@ -82,6 +83,7 @@ class Simulation:
       return
     self.queues[queue].remove_agent(agent)
 
+    agent.select_how = SelectionCriteria.INFER
     queue_idx = agent.select_queue(self.queues)
     agent.currQeueu = queue_idx
     self.logger.onSwitch(self.time, agent, queue, queue_idx)
