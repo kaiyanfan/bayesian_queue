@@ -1,0 +1,11 @@
+{
+  "sim_time":5000,
+  "type":"highwaycar",
+  "num_queue":3,
+  "arrival_lam":5,
+  "queue_params":[
+     [999999],
+     [999999],
+     [7]
+  ]
+}

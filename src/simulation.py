@@ -3,13 +3,14 @@ import json
 import numpy as np
 
 from agents.mallcustomer import MallCustomer
+from agents.highwaycar import HighwayCar
 from agents.agent import SelectionCriteria
 
 from event import Event, EventType
 from bayesqueue import Queue
 from logger import Logger
 
-config = "../configs/mall01.json"
+config = "../configs/highway01.json"
 
 class Simulation:
   def __init__(self, agentType, arrivalLam, numQueue, queueParams, simTime):
@@ -72,7 +73,7 @@ class Simulation:
     nextEvent = self.queues[queue].depart(self.time)
     # update all agents' observations
     for q in self.queues:
-      q.updateAll(event)
+      q.updateAll(queue, None)
     if nextEvent != None:
       heapq.heappush(self.events, nextEvent)
     # allow all agent to consider switching/quitting
@@ -118,6 +119,8 @@ def simulate():
 
   if simType == "mallcustomer":
     agentType = MallCustomer
+  elif simType == "highwaycar":
+    agentType = HighwayCar
   else:
     raise Exception(f"Unknown simulation type {simType}")
 

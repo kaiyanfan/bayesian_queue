@@ -99,6 +99,7 @@ class Logger:
 
     # report wait time statistics to diagram
     plt.figure(1)
+    # print(self.waitTime)
     for i, length in enumerate(self.waitTime):
       lists = sorted(length.items())
       x, y = zip(*lists)
