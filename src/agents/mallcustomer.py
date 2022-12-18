@@ -5,13 +5,16 @@ from agents.agent import Agent, SelectionCriteria
 
 MIN_LOAD = 10
 MAX_LOAD = 30
-MAX_WAIT = 300
 
 # conjugate prior (µ, λ)
 # prior mean
 PRIOR_MU = 1
 # prior lambda; represents how strong does the agent believe in the prior mean
 PRIOR_LAMBDA = 3
+# models the *default effect*: people tend to stay at where they are unless there is a big difference in queueing time
+SWITCH_THRESHOLD = 1.1
+# max waiting time
+MAX_WAIT = 300
 
 class MallCustomer(Agent):
 
@@ -47,13 +50,19 @@ class MallCustomer(Agent):
   
   """
   Select the fastest queue based on the posterior estimates on queue speed
+  currLoad: the current load that agent waits for
   """
-  def __select_infer(self, queues):
-    least, least_load = 0, queues[0].load * self.speeds[0]
+  def select_posterior(self, queues, currQueue, currLoad):
+    least, least_load = currQueue, currLoad
     for i, q in enumerate(queues):
       if q.load * self.speeds[i] < least_load:
         least, least_load = i, q.load * self.speeds[i]
-    return least
+    if least_load > MAX_WAIT:
+      return None
+    # only switch if the benefit of switching is big enough (> THRESHOLD)
+    if least_load * SWITCH_THRESHOLD < currLoad:
+      return least
+    return currQueue
   
   """
   Update the agent's view of the queue states
@@ -83,6 +92,4 @@ class MallCustomer(Agent):
       return super().select_shortest(queues)
     elif self.select_how == SelectionCriteria.LEAST_LOAD:
       return super().select_least_load(queues)
-    elif self.select_how == SelectionCriteria.INFER:
-      return self.__select_infer(queues)
     raise Exception("Invalid selection Criteria")

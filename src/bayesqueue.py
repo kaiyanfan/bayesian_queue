@@ -2,6 +2,9 @@ import numpy as np
 
 from event import Event, EventType
 
+# stay in the current queue for at least this amount of time before switching
+OBSERVE_TIME = 20
+
 class Queue:
   def __init__(self, queueId, params, logger):
     self.id = queueId
@@ -22,12 +25,34 @@ class Queue:
   def updateAll(self, event):
     for agent in self.queue:
       agent.update(event)
-
+  
   """
-  Remove agent from queue
+  Agents decide whether switching to a different queue or quit
+  If the agent is being served it can't switch!
   """
-  def remove_agent(self, agent):
-    self.queue.remove(agent)
+  def switchAll(self, currTime):
+    # cumulative load (total load in front of agent i)
+    load = 0
+    # work with a copy of the list as we remove from the list
+    for agent in list(self.queue[1:]):
+      # must observe for a certain amount of time before switching
+      if agent.arrivalTime + OBSERVE_TIME > currTime:
+        load += agent.load
+        continue
+      dst = agent.select_posterior(self.queues, self.id, load)
+      # Quit the queue
+      if dst == None:
+        self.queue.remove(agent)
+        self.load -= agent.load
+        self.logger.onLeave(currTime, agent, self.id)
+      # Switch to a different queue
+      elif dst != self.id:
+        self.queue.remove(agent)
+        self.load -= agent.load
+        self.queues[dst].arrive(agent, currTime)
+        self.logger.onSwitch(currTime, agent, self.id, dst)
+      # Add to cumulative load
+      load += agent.load
 
   """
   The arrival routine. Returns (optional) scheduled depart event
@@ -42,17 +67,6 @@ class Queue:
       event = Event(self.id, EventType.DEPART, departTime, serveTime, self.queue[0].load, agent)
       return event
     
-    # schedule the leave / switch event regardless (agent can always leave the queue even when others are being served)
-    if agent.trials > 1:
-      agent.trials -= 1
-      departTime = currTime + agent.quit_time
-      event = Event(self.id, EventType.SWITCH, departTime, 0, 1, agent)
-      return event
-    else:
-      departTime = currTime + agent.quit_time
-      event = Event(self.id, EventType.LEAVE, departTime, 0, 1, agent)
-      return event
-
   """
   The departure routine. Returns (optional) scheduled depart event
   """
