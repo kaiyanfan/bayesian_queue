@@ -1,15 +1,20 @@
 import heapq
 import json
 import numpy as np
+import random
+import time
 
 from agents.mallcustomer import MallCustomer
+from agents.human_agent import HumanAgent
 from agents.agent import SelectionCriteria
 
 from event import Event, EventType
 from bayesqueue import Queue
 from logger import Logger
 
-config = "../configs/mall01.json"
+# config = "../configs/mall01.json"
+config = "../configs/mall02.json"
+# config = "../configs/human01.json"
 
 class Simulation:
   def __init__(self, agentType, arrivalLam, numQueue, queueParams, simTime):
@@ -94,6 +99,9 @@ class Simulation:
         break
       # pick up the next event
       event = heapq.heappop(self.events)
+      if self.agentType == HumanAgent:
+        print("\t\nT = ", int(self.time), ": waiting", int(event.eventTime - self.time), "for next event . . . ")
+        # time.sleep(event.eventTime - self.time)
       # trigger the event
       self.time = event.eventTime
       if event.eventType == EventType.ARRIVAL:
@@ -118,8 +126,13 @@ def simulate():
 
   if simType == "mallcustomer":
     agentType = MallCustomer
+  elif simType == "human_agent":
+    agentType = HumanAgent
   else:
     raise Exception(f"Unknown simulation type {simType}")
+
+  random.seed(0)
+  np.random.seed(0)
 
   sim = Simulation(agentType, arrivalLam, numQueue, params, simTime)
   sim.run()

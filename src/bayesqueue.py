@@ -82,3 +82,13 @@ class Queue:
       event = Event(self.id, EventType.DEPART, departTime, serveTime, self.queue[0].load, self.queue[0])
       return event
     return None
+
+  def pretty_string(self):
+    pretty_str = "[ "
+    for i in range(len(self.queue)):
+      curr_agent = self.queue[i]
+      pretty_str += str(curr_agent.load) + " | "
+    if len(self.queue) > 0:
+      pretty_str = pretty_str[:-2]
+    pretty_str += "]"
+    return pretty_str
